@@ -1,27 +1,16 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import config from "./config";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export default clerkMiddleware({
-  publicRoutes: ["/", "/api/payments/webhook", "/api/auth/webhook"],
-  afterAuth(auth, req) {
-    if (!auth.userId && !auth.isPublicRoute) {
-      return auth.isApiRoute
-        ? new NextResponse("Unauthorized", { status: 401 })
-        : NextResponse.redirect(new URL("/sign-in", req.url));
-    }
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
 
-    if (auth.userId && !auth.isPublicRoute) {
-      const isProtectedRoute = req.nextUrl.pathname.startsWith("/dashboard");
-      if (isProtectedRoute && !config.auth.enabled) {
-        return NextResponse.redirect(new URL("/", req.url));
-      }
-    }
-
-    return NextResponse.next();
-  },
+export default clerkMiddleware((auth, req) => {
+  if (isProtectedRoute(req)) auth().protect();
 });
 
-export const middlewareConfig = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 };
