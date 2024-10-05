@@ -99,19 +99,6 @@ export default function DashboardSideBar() {
             </Link>
 
             <Separator className="my-4" />
-
-            <Link href="/dashboard/settings" id="onboarding" className="w-full">
-              <Button
-                variant="ghost"
-                className={clsx(
-                  "w-full justify-start py-2 px-4",
-                  pathname === "/dashboard/settings" && "bg-accent"
-                )}
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-            </Link>
           </nav>
         </div>
       </div>
